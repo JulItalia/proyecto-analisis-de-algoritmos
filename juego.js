@@ -5,10 +5,21 @@ const boardText = `
 . . . . . . .
 . . . . - - >
 | . . . . . .
+v . . . . - B
+. . . . . . |
+. . - - > . v
+`;
+
+/*
+. . - > . . .
+. . . . . . .
+. . . . - - >
+| . . . . . .
 v . . . - B |
 . . . . . . |
 . . - - > . v
 `;
+*/ 
 
 // imágenes disponibles según tipo y orientación
 const images = {
@@ -282,6 +293,34 @@ function mostrarTablero(vehiculos) {
   }
   textoSalida.textContent = `Salida: fila ${EXIT_ROW}, columna ${EXIT_COL}`;
 }
+
+
+function esObjetivo(vehiculos) {
+  const objetivo = vehiculos.find(v => v.esObjetivo);
+  return objetivo.columna + objetivo.largo - 1 === EXIT_COL && objetivo.fila === EXIT_ROW;
+}
+
+// Breadth First Search
+function breadthFirstSearch(tableroInicial) {
+  if (esObjetivo(tableroInicial)) {
+    mostrarResultado("El carro ya puede salir");
+    return;
+  
+
+  }
+  mostrarResultado("El carro todavía no puede salir");
+}
+
+function mostrarResultado(texto) {
+  document.getElementById("resultado").textContent = texto;
+}
+
+
+function ejecutarBFS() {
+  const tablero = analizarTablero2(boardText);
+  breadthFirstSearch(tablero);
+}
+
 
 // Ejecutar
 const vehiculos = analizarTablero2(boardText);
