@@ -5,10 +5,21 @@ const boardText = `
 . . . . . . .
 . . . . - - >
 | . . . . . .
+v - B . | . |
+. . . . v . |
+. . - - > . v
+`;
+
+/*
+. . - > . . .
+. . . . . . .
+. . . . - - >
+| . . . . . .
 v . . . . - B
 . . . . . . |
 . . - - > . v
 `;
+*/
 
 /*
 . . - > . . .
@@ -259,19 +270,36 @@ function mostrarTablero(vehiculos) {
     divVehiculo.style.gridColumnEnd = vehiculo.orientacion === "H" ? vehiculo.columna + 1 + vehiculo.largo : vehiculo.columna + 2;
     divVehiculo.style.backgroundSize = "cover";
     divVehiculo.style.backgroundPosition = "center";
+    divVehiculo.style.position = "relative";
+    divVehiculo.style.display = "flex";
+    divVehiculo.style.alignItems = "center";
+    divVehiculo.style.justifyContent = "center";
 
     if (vehiculo.imagen) divVehiculo.style.backgroundImage = `url(${vehiculo.imagen})`;
+
+    const numero = document.createElement("div");
+    numero.textContent = vehiculo.id;
+    numero.style.position = "absolute";
+    numero.style.top = "-16px";
+    numero.style.left = "50%";
+    numero.style.transform = "translateX(-50%)";
+    numero.style.fontSize = "12px";
+    numero.style.fontWeight = "bold";
+    numero.style.color = "black";
+    divVehiculo.appendChild(numero);
 
     if (vehiculo.esObjetivo) {
       const span = document.createElement("span");
       span.textContent = "Objetivo";
+      span.style.fontSize = "10px";
+      span.style.color = "white";
+      span.style.fontWeight = "bold";
       divVehiculo.appendChild(span);
     }
 
     tablero.appendChild(divVehiculo);
   }
 
-  // Dibujar salida
   const divSalida = document.createElement("div");
   divSalida.style.gridRowStart = EXIT_ROW + 1;
   divSalida.style.gridColumnStart = EXIT_COL + 1;
@@ -282,7 +310,6 @@ function mostrarTablero(vehiculos) {
   divSalida.style.borderRadius = "4px";
   tablero.appendChild(divSalida);
 
-  // Mostrar texto de la salida
   let textoSalida = document.getElementById("exit-text");
   if (!textoSalida) {
     textoSalida = document.createElement("p");
@@ -300,28 +327,200 @@ function esObjetivo(vehiculos) {
   return objetivo.columna + objetivo.largo - 1 === EXIT_COL && objetivo.fila === EXIT_ROW;
 }
 
-// Breadth First Search
-function breadthFirstSearch(tableroInicial) {
-  if (esObjetivo(tableroInicial)) {
-    mostrarResultado("El carro ya puede salir");
-    return;
-  
 
-  }
-  mostrarResultado("El carro todavía no puede salir");
+//Crea una copia de los vehículos
+function crearEstado(vehiculos) {
+  return vehiculos.map(v => ({ ...v }));
 }
 
+// Serializa el estado para evitar repetidos
+function serializarEstado(vehiculos) {
+  return vehiculos.map(v => `${v.id},${v.fila},${v.columna}`).join("|");
+}
+
+
+
+// Genera todos los sucesores posibles
+function generarSucesores(vehiculos) {
+  const sucesores = [];
+
+  for (let i = 0; i < vehiculos.length; i++) {
+    const v = vehiculos[i];
+    const movimientos = movimientosPosibles(v, vehiculos);
+
+    for (const mov of movimientos) {
+      const nuevoVehiculos = crearEstado(vehiculos);
+      nuevoVehiculos[i].fila = mov.nuevaFila;
+      nuevoVehiculos[i].columna = mov.nuevaColumna;
+
+      const movimiento = `Mover vehículo ${v.id} ${mov.direccion} (${mov.pasos} paso${mov.pasos > 1 ? "s" : ""})`;
+      sucesores.push([nuevoVehiculos, movimiento]);
+    }
+  }
+
+  return sucesores;
+}
+
+// Determina los movimientos posibles de un vehículo
+function movimientosPosibles(v, vehiculos) {
+  const movimientos = [];
+
+  const ocupado = (f, c) =>
+    vehiculos.some(o =>
+      o.id !== v.id &&
+      f >= o.fila &&
+      f < o.fila + (o.orientacion === "V" ? o.largo : 1) &&
+      c >= o.columna &&
+      c < o.columna + (o.orientacion === "H" ? o.largo : 1)
+    );
+
+  if (v.orientacion === "H") {
+    // Izquierda
+    let pasos = 0;
+    while (v.columna - pasos - 1 >= 0 && !ocupado(v.fila, v.columna - pasos - 1)) {
+      pasos++;
+      movimientos.push({ nuevaFila: v.fila, nuevaColumna: v.columna - pasos, pasos, direccion: "izquierda" });
+    }
+    // Derecha
+    pasos = 0;
+    while (v.columna + v.largo + pasos < SIZE && !ocupado(v.fila, v.columna + v.largo + pasos)) {
+      pasos++;
+      movimientos.push({ nuevaFila: v.fila, nuevaColumna: v.columna + pasos, pasos, direccion: "derecha" });
+    }
+  } else {
+    // Arriba
+    let pasos = 0;
+    while (v.fila - pasos - 1 >= 0 && !ocupado(v.fila - pasos - 1, v.columna)) {
+      pasos++;
+      movimientos.push({ nuevaFila: v.fila - pasos, nuevaColumna: v.columna, pasos, direccion: "arriba" });
+    }
+    // Abajo
+    pasos = 0;
+    while (v.fila + v.largo + pasos < SIZE && !ocupado(v.fila + v.largo + pasos, v.columna)) {
+      pasos++;
+      movimientos.push({ nuevaFila: v.fila + pasos, nuevaColumna: v.columna, pasos, direccion: "abajo" });
+    }
+  }
+
+  return movimientos;
+}
+
+// BFS
+/*
+function breadthFirstSearch(tableroInicial) {
+  const visitados = new Set();
+  const cola = [];
+
+  const estadoInicial = crearEstado(tableroInicial);
+  cola.push({ estado: estadoInicial, camino: [] });
+  visitados.add(serializarEstado(estadoInicial));
+
+  while (cola.length > 0) {
+    const nodo = cola.shift();
+    const { estado, camino } = nodo;
+
+    if (esObjetivo(estado)) {
+      mostrarResultado(`Solución encontrada en ${camino.length} movimientos`);
+      console.log("Camino:", camino);
+      return camino;
+    }
+
+    const sucesores = generarSucesores(estado);
+    for (const [nuevoEstado, movimiento] of sucesores) {
+      const clave = serializarEstado(nuevoEstado);
+      if (!visitados.has(clave)) {
+        visitados.add(clave);
+        cola.push({ estado: nuevoEstado, camino: [...camino, movimiento] });
+      }
+    }
+  }
+
+  mostrarResultado("No se encontró solución");
+  return null;
+}
+*/
+
+function breadthFirstSearch(tableroInicial) {
+  const visitados = new Set();
+  const cola = [];
+
+  const estadoInicial = crearEstado(tableroInicial);
+  cola.push({ estado: estadoInicial, camino: [] });
+  visitados.add(serializarEstado(estadoInicial));
+
+  while (cola.length > 0) {
+    const nodo = cola.shift();
+    const { estado, camino } = nodo;
+
+    // Verifica si el carro objetivo puede salir
+    if (esObjetivo(estado)) {
+      mostrarResultado(`Solucion encontrada en ${camino.length} movimiento${camino.length !== 1 ? "s" : ""}`, camino);
+      return camino;
+    }
+
+    // Generar estados sucesores
+    const sucesores = generarSucesores(estado);
+    for (const [nuevoEstado, movimiento] of sucesores) {
+      const clave = serializarEstado(nuevoEstado);
+      if (!visitados.has(clave)) {
+        visitados.add(clave);
+        cola.push({ estado: nuevoEstado, camino: [...camino, movimiento] });
+      }
+    }
+  }
+
+  // Si no se encontró ninguna solución
+  mostrarResultado("No se encontro solucion", []);
+  return null;
+}
+
+// Interfaz
+/*
 function mostrarResultado(texto) {
   document.getElementById("resultado").textContent = texto;
 }
-
 
 function ejecutarBFS() {
   const tablero = analizarTablero2(boardText);
   breadthFirstSearch(tablero);
 }
+*/
 
+function mostrarResultado(texto, pasos = []) {
+  const resultadoDiv = document.getElementById("resultado");
+  resultadoDiv.innerHTML = "";
 
-// Ejecutar
+  const mensaje = document.createElement("p");
+  mensaje.textContent = texto;
+  mensaje.style.fontWeight = "bold";
+  resultadoDiv.appendChild(mensaje);
+
+  if (pasos.length > 0) {
+    const lista = document.createElement("ol");
+    lista.style.textAlign = "left";
+    lista.style.margin = "0 auto";
+    lista.style.width = "fit-content";
+
+    pasos.forEach(paso => {
+      const li = document.createElement("li");
+      li.textContent = paso;
+      lista.appendChild(li);
+    });
+
+    resultadoDiv.appendChild(lista);
+  }
+}
+
+function ejecutarBFS() {
+  const tablero = analizarTablero2(boardText);
+  const solucion = breadthFirstSearch(tablero);
+
+  if (solucion && solucion.length > 0) {
+    console.log("Secuencia de movimientos:");
+    solucion.forEach((m, i) => console.log(`${i + 1}. ${m}`));
+  }
+}
+
+// Iniciar tablero
 const vehiculos = analizarTablero2(boardText);
 mostrarTablero(vehiculos);
