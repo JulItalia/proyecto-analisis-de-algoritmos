@@ -344,20 +344,28 @@ function serializarEstado(vehiculos) {
 function generarSucesores(vehiculos) {
   const sucesores = [];
 
+  //recorre cada vehículo
   for (let i = 0; i < vehiculos.length; i++) {
     const v = vehiculos[i];
+    //calcula todos los movimientos posibles para el vehículo
     const movimientos = movimientosPosibles(v, vehiculos);
 
+    //genera un nuevo estado para cada movimiento posible
     for (const mov of movimientos) {
+      //copia el estado actual
       const nuevoVehiculos = crearEstado(vehiculos);
+      //se aplica el movimiento
       nuevoVehiculos[i].fila = mov.nuevaFila;
       nuevoVehiculos[i].columna = mov.nuevaColumna;
 
+      //se crea una descricripción del movimiento
       const movimiento = `Mover vehículo ${v.id} ${mov.direccion} (${mov.pasos} paso${mov.pasos > 1 ? "s" : ""})`;
+      //se agrega el nuevo estado y movimiento al arreglo de sucesores
       sucesores.push([nuevoVehiculos, movimiento]);
     }
   }
 
+  //retorna la lista con los nuevos estados posibles
   return sucesores;
 }
 
@@ -365,9 +373,10 @@ function generarSucesores(vehiculos) {
 function movimientosPosibles(v, vehiculos) {
   const movimientos = [];
 
+  // determina si una cuadro está ocupado por un vehículo
   const ocupado = (f, c) =>
     vehiculos.some(o =>
-      o.id !== v.id &&
+      o.id !== v.id && //ignora el vehículo en caso de ser el mismo
       f >= o.fila &&
       f < o.fila + (o.orientacion === "V" ? o.largo : 1) &&
       c >= o.columna &&
@@ -402,6 +411,7 @@ function movimientosPosibles(v, vehiculos) {
     }
   }
 
+  //devuelve todos los movimientos calculdados válidos
   return movimientos;
 }
 
@@ -441,24 +451,30 @@ function breadthFirstSearch(tableroInicial) {
 */
 
 function breadthFirstSearch(tableroInicial) {
+  // estados visitados para evitar ciclos
   const visitados = new Set();
+  // cola de estados por explorar
   const cola = [];
 
+  // copia el tablero inicial
   const estadoInicial = crearEstado(tableroInicial);
   cola.push({ estado: estadoInicial, camino: [] });
   visitados.add(serializarEstado(estadoInicial));
 
+  // bucle del bfs
   while (cola.length > 0) {
+    // saca el primer elemento de la cola
     const nodo = cola.shift();
     const { estado, camino } = nodo;
 
     // Verifica si el carro objetivo puede salir
     if (esObjetivo(estado)) {
-      mostrarResultado(`Solucion encontrada en ${camino.length} movimiento${camino.length !== 1 ? "s" : ""}`, camino);
+      mostrarResultado(`Solución encontrada en ${camino.length} movimiento${camino.length !== 1 ? "s" : ""}`, camino);
+      // retorna el camino completo
       return camino;
     }
 
-    // Generar estados sucesores
+    // Genera estados sucesores
     const sucesores = generarSucesores(estado);
     for (const [nuevoEstado, movimiento] of sucesores) {
       const clave = serializarEstado(nuevoEstado);
@@ -470,7 +486,7 @@ function breadthFirstSearch(tableroInicial) {
   }
 
   // Si no se encontró ninguna solución
-  mostrarResultado("No se encontro solucion", []);
+  mostrarResultado("No se encontró solución", []);
   return null;
 }
 
