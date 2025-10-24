@@ -259,6 +259,18 @@ function mostrarTablero(vehiculos) {
       div.appendChild(label);
     }
 
+    const numLabel = document.createElement("div");
+    numLabel.textContent = v.id;
+    numLabel.style.position = "absolute";
+    numLabel.style.top = "2px";
+    numLabel.style.left = "2px";
+    numLabel.style.fontSize = "12px";
+    numLabel.style.background = "rgba(0,0,0,0.6)";
+    numLabel.style.color = "white";
+    numLabel.style.padding = "1px 3px";
+    numLabel.style.borderRadius = "3px";
+    div.appendChild(numLabel); 
+
     tablero.appendChild(div);
   });
 
@@ -525,12 +537,21 @@ function depthFirstSearch(tableroInicial) {
 //Funcion para ejecutar el DFS con el tablero. Si hay solucion muestra la secuencia de movimientos
 function ejecutarDFS() {
   const tablero = analizarTablero2(boardTextDefault);
+  const t0 = performance.now();
   const solucion = depthFirstSearch(tablero);
+  const t1 = performance.now();
+  const tiempo = (t1 - t0).toFixed(2);
 
   if (solucion && solucion.length > 0) {
     console.log("Secuencia de movimientos (DFS):");
     solucion.forEach((m, i) => console.log(`${i + 1}. ${m}`));
   }
+
+  const resultadoDiv = document.getElementById("resultado");
+  const tiempoP = document.createElement("p");
+  tiempoP.textContent = `Tiempo de ejecución DFS: ${tiempo} ms`;
+  tiempoP.style.fontWeight = "bold";
+  resultadoDiv.appendChild(tiempoP);
 }
 
 //Funcion del algoritmo A*
@@ -627,12 +648,21 @@ function aStarSearch(tableroInicial) {
 //Funcion para ejecutar el A* con el tablero. Si hay solucion muestra la secuencia de movimientos
 function ejecutarAEstrella() {
   const tablero = analizarTablero2(boardTextDefault);
+  const t0 = performance.now();
   const solucion = aStarSearch(tablero);
+  const t1 = performance.now();
+  const tiempo = (t1 - t0).toFixed(2);
 
   if (solucion && solucion.length > 0) {
     console.log("Secuencia de movimientos (A*):");
     solucion.forEach((m, i) => console.log(`${i + 1}. ${m}`));
   }
+
+  const resultadoDiv = document.getElementById("resultado");
+  const tiempoP = document.createElement("p");
+  tiempoP.textContent = `Tiempo de ejecución A*: ${tiempo} ms`;
+  tiempoP.style.fontWeight = "bold";
+  resultadoDiv.appendChild(tiempoP);
 }
 
 
@@ -667,12 +697,21 @@ function mostrarResultado(texto, pasos = []) {
 // ejecuta BFS
 function ejecutarBFS() {
   const tablero = analizarTablero2(boardTextDefault);
+  const t0 = performance.now();
   const solucion = breadthFirstSearch(tablero);
+  const t1 = performance.now();
+  const tiempo = (t1 - t0).toFixed(2);
 
   if (solucion && solucion.length > 0) {
-    console.log("Secuencia de movimientos:");
+    console.log("Secuencia de movimientos (BFS):");
     solucion.forEach((m, i) => console.log(`${i + 1}. ${m}`));
   }
+
+  const resultadoDiv = document.getElementById("resultado");
+  const tiempoP = document.createElement("p");
+  tiempoP.textContent = `Tiempo de ejecución BFS: ${tiempo} ms`;
+  tiempoP.style.fontWeight = "bold";
+  resultadoDiv.appendChild(tiempoP);
 }
 
 function actualizarTablero() {
