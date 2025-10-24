@@ -10,7 +10,42 @@
 
   <div id="board"></div>
   <div id="resultado"></div>
+
   <button onclick="ejecutarBFS()">Ejecutar BFS</button>
+  <button onclick="ejecutarDFS()">Ejecutar DFS</button>
+  <button onclick="ejecutarAEstrella()">Ejecutar A*</button>
+  <button id="btnActualizar" onclick="actualizarTablero()" disabled>Actualizar tablero</button>
+  <button onclick="personalizador()">Personalizar tablero</button>
+
+
+  <div id="panelPersonalizado" style="display:none; margin-top:20px;">
+    <h3>Personalizar tablero</h3>
+
+    <label for="tamanoTablero">Tamaño del tablero (3-12):</label>
+    <input type="number" id="tamanoTablero" min="3" max="12" value="7">
+    <br><br>
+
+    <label for="textoTablero">Texto del tablero:</label><br>
+    <textarea id="textoTablero" rows="8" cols="40" placeholder="Pega el tablero :D"></textarea>
+    <br><br>
+
+    <fieldset style="display:inline-block; text-align:left; padding:10px;">
+      <legend><b>Coordenadas de la salida</b></legend>
+      <label for="salidaFila">Fila:</label>
+      <input type="number" id="salidaFila" min="0" max="11" value="4">
+      <br>
+      <label for="salidaColumna">Columna:</label>
+      <input type="number" id="salidaColumna" min="0" max="11" value="6">
+    </fieldset>
+    <br><br>
+
+    <button onclick="guardarPersonalizado()">Guardar</button>
+    <button onclick="cancelarPersonalizado()">Cancelar</button>
+    <button onclick="probarValidacion()" style="background-color:#0078ff;color:white;border:none;padding:5px 10px;border-radius:5px;margin-left:10px;">
+      Probar validación
+    </button>
+  </div>
+
   <script src="juego.js"></script>
 </body>
 </html>

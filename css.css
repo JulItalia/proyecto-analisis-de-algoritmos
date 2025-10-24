@@ -1,33 +1,38 @@
-body {
+body { 
   font-family: Arial, sans-serif;
   text-align: center;
-  background-color: #f0f0f0;
+  background-image: url("recursos/fondo.png"); 
+  background-size: cover;          
+  background-position: center;    
+  background-attachment: fixed;    
   margin: 0;
   padding: 20px;
 }
 
 #board {
-  display: grid;
-  gap: 4px;
+  position: relative;
   margin: 20px auto; 
   border: 2px solid #444;
-  padding: 10px;
   background-color: #fff;
-  width: max-content; 
+  box-sizing: border-box;
 }
 
 .cell {
-  width: 50px;
-  height: 50px;
   border: 1px solid #ccc;
-  background-color: #fff;
+  background-color: #f9f9f9;
+  box-sizing: border-box;
 }
 
 .car {
-  position: relative;
+  position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-size: cover;
+  background-position: center;
+  border-radius: 4px;
+  box-sizing: border-box;
+  z-index: 10;
 }
 
 .car span {
@@ -36,3 +41,9 @@ body {
   font-weight: bold;
   text-align: center;
 }
+
+/*
+body, h1, p, div, span, textarea, label, legend, fieldset {
+  color: white;
+}
+  */
