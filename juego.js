@@ -12,7 +12,6 @@ v - B . | . |
 . . - - > . v 
 `;
 
-
 /*
 . . - > . . . 
 . . . . . . . 
@@ -23,6 +22,7 @@ v - B . | . |
 . . - - > . v 
 `;
 */
+
 /*
 - > . . - > - > - > - > .
 - > - > - > - > - > - > .
@@ -95,64 +95,34 @@ function esObjetivoHorizontal(lineas, fila, columna) {
 }
 
 // Cuenta la longitud de un vehículo horizontal
-/*
-function contarHorizontal(lineas, fila, columna) {
-  let largo = 1;
-  let colActual = columna;
-  while (colActual + 1 < SIZE && (lineas[fila][colActual + 1] === "-" || lineas[fila][colActual + 1] === ">")) {
-    colActual++;
-    largo++;
-  }
-  return largo;
-}
-*/
-
 function contarHorizontal(lineas, fila, columna) {
   let largo = 1;
   let col = columna;
-
   while (col + 1 < SIZE && lineas[fila][col + 1] === "-") {
     largo++;
     col++;
   }
-
   if (col + 1 < SIZE && lineas[fila][col + 1] === ">") {
     largo++;
   }
-
-  return Math.min(largo, 3);
-}
-
-function contarVertical(lineas, fila, columna) {
-  let largo = 1;
-  let f = fila;
-
-  while (f + 1 < SIZE && lineas[f + 1][columna] === "|") {
-    largo++;
-    f++;
-  }
-
-  if (f + 1 < SIZE && lineas[f + 1][columna] === "v") {
-    largo++;
-  }
-
   return Math.min(largo, 3);
 }
 
 // Cuenta la longitud de un vehículo vertical
-/*
 function contarVertical(lineas, fila, columna) {
   let largo = 1;
-  let filaActual = fila;
-  while (filaActual + 1 < SIZE && (lineas[filaActual + 1][columna] === "|" || lineas[filaActual + 1][columna] === "v")) {
-    filaActual++;
+  let f = fila;
+  while (f + 1 < SIZE && lineas[f + 1][columna] === "|") {
+    largo++;
+    f++;
+  }
+  if (f + 1 < SIZE && lineas[f + 1][columna] === "v") {
     largo++;
   }
-  return largo;
+  return Math.min(largo, 3);
 }
-*/
 
-// Devuelve el tipo según la longitud del vehículo
+// Devuelve el tipo de vehivulo según la longitud del mismo
 function obtenerTipo(largo) {
   if (largo === 3) {
     return "camion";
@@ -167,7 +137,6 @@ function analizarTablero2(tableroTexto) {
   const vehiculos = [];
   const visitadas = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
   let idVehiculo = 1;
-
   for (let fila = 0; fila < SIZE; fila++) {
     for (let columna = 0; columna < SIZE; columna++) {
       if (visitadas[fila][columna]) continue;
@@ -318,7 +287,7 @@ function mostrarTablero(vehiculos) {
 
 // funciones para BFS y movimientos
 
-// Verifica si el objetivo está en la salida
+// Verifica que el carro sea el objetivo
 function esObjetivo(vehiculos) {
   const objetivo = vehiculos.find(v => v.esObjetivo);
   if (!objetivo) return false;
@@ -336,6 +305,7 @@ function esObjetivo(vehiculos) {
   return false;
 }
 
+//Verifica si el objetivo está en la salida
 function verifSalida(tableroTexto, salidaFila) {
   const vehiculos = analizarTablero2(tableroTexto);
   const objetivo = vehiculos.find(v => v.esObjetivo);
@@ -448,17 +418,22 @@ function genMovSiguientes(vehiculos) {
   return movSiguientes;
 }
 
-// BFS
+// Funcion del algoritmo BFS
 
 function breadthFirstSearch(tableroInicial) {
+  // se guardan los estados visitados para evitar repeticiones
   const visitados = new Set();
+  // cola de estados por visitar
   const cola = [];
 
   const estadoInicial = crearEstado(tableroInicial);
   cola.push({ estado: estadoInicial, camino: [] });
   visitados.add(serializarEstado(estadoInicial));
 
+  // ciclo para visitar todos los nodos
+  let explorados = 0;
   while (cola.length > 0) {
+    explorados++;
     const nodo = cola.shift();
     const { estado, camino } = nodo;
 
@@ -478,52 +453,8 @@ function breadthFirstSearch(tableroInicial) {
     return camino;
   }
 
-    const sucesores = genMovSiguientes(estado);
-    for (const [nuevoEstado, movimiento] of sucesores) {
-      const clave = serializarEstado(nuevoEstado);
-      if (!visitados.has(clave)) {
-        visitados.add(clave);
-        cola.push({ estado: nuevoEstado, camino: [...camino, movimiento] });
-      }
-    }
-  }
-
-  mostrarResultado("No se encontró solución", []);
-  return null;
-}
-
-
-// Funcion del algoritmo BFS
-/*
-function breadthFirstSearch(tableroInicial) {
-  // se guardan los estados visitados para evitar repeticiones
-  const visitados = new Set();
-  // cola de estados por visitar
-  const cola = [];
-
-  // se hace una copia del tablero inicial
-  const estadoInicial = crearEstado(tableroInicial);
-  cola.push({ estado: estadoInicial, camino: [] });
-  visitados.add(serializarEstado(estadoInicial));
-
-  // ciclo para visitar todos los nodos
-  let explorados = 0;
-  while (cola.length > 0) {
-    explorados++;
-    // saca el primer elemento de la cola
-    const nodo = cola.shift();
-    const { estado, camino } = nodo;
-
-    // Verifica si el carro objetivo puede salir
-    if (esObjetivo(estado)) {
-      
-      mostrarResultado(`Solución encontrada en ${camino.length} movimiento${camino.length !== 1 ? "s" : ""}`, camino);
-      // retorna el camino completo
-      return camino;
-    }
-
     // Genera los estados sucesores para poder visitarlos
-    const sucesores = generarSucesores(estado);
+    const sucesores = genMovSiguientes(estado);
     for (const [nuevoEstado, movimiento] of sucesores) {
       const clave = serializarEstado(nuevoEstado);
       if (!visitados.has(clave)) {
@@ -536,49 +467,7 @@ function breadthFirstSearch(tableroInicial) {
   // Si no se encontró ninguna solución
   mostrarResultado(`No se encontró solución. Se exploraron: ${explorados} estados`, []);
   return null;
-}*
-*/
-
-// Funcion que se encarga de mostrar en pantalla si el tablero tiene solucion
-// Si la tiene muestra los movimientos realizados para resolver el problema
-/*
-function mostrarResultado(texto, pasos = []) {
-  const resultadoDiv = document.getElementById("resultado");
-  resultadoDiv.innerHTML = "";
-
-  const mensaje = document.createElement("p");
-  mensaje.textContent = texto;
-  mensaje.style.fontWeight = "bold";
-  resultadoDiv.appendChild(mensaje);
-
-  if (pasos.length > 0) {
-    const lista = document.createElement("ol");
-    lista.style.textAlign = "left";
-    lista.style.margin = "0 auto";
-    lista.style.width = "fit-content";
-
-    pasos.forEach(paso => {
-      const li = document.createElement("li");
-      li.textContent = paso;
-      lista.appendChild(li);
-    });
-
-    resultadoDiv.appendChild(lista);
-  }
 }
-*/
-/*
-// Funcion para ejecutar el BFS con el tablero. Si hay solucion muestra la secuencia de movimientos
-function ejecutarBFS() {
-  const tablero = analizarTablero2(boardText);
-  const solucion = breadthFirstSearch(tablero);
-
-  if (solucion && solucion.length > 0) {
-    console.log("Secuencia de movimientos:");
-    solucion.forEach((m, i) => console.log(`${i + 1}. ${m}`));
-  }
-}
-*/
 
 //Funcion del algoritmo DFS
 function depthFirstSearch(tableroInicial) {
@@ -686,7 +575,9 @@ function aStarSearch(tableroInicial) {
   visitados.add(claveInicial);
 
   //Ciclo del A* para visitar los mejores nodos
+  let explorados = 0;
   while (cola.length > 0) {
+    explorados++;
     // ordenar la cola utilizando el menor primero
     cola.sort((a, b) => a.f - b.f);
     const nodo = cola.shift();
@@ -706,8 +597,6 @@ function aStarSearch(tableroInicial) {
       mostrarResultado(texto, camino);
       return camino;
     }
-
-
 
     // generar sucesores
     const sucesores = genMovSiguientes(estado);
@@ -883,10 +772,6 @@ function verifSalida(tableroTexto, salidaFila, tamanoOpt = null) {
   if (!obj) return false;
   return obj.fila === salidaFila;
 }
-
-
-
-
 
 
 // inicialización
